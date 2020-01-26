@@ -21,5 +21,11 @@
         "ecmaVersion": 2018
     },
     "rules": {
+        "no-underscore-dangle": [
+            "error",
+            {
+                "enforceInMethodNames": false
+            }
+        ]
     }
 }
