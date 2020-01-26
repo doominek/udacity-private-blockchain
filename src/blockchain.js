@@ -9,8 +9,8 @@
  */
 
 const SHA256 = require("crypto-js/sha256");
-const BlockClass = require("./block.js");
 const bitcoinMessage = require("bitcoinjs-message");
+const BlockClass = require("./block.js");
 
 class Blockchain {
   /**
@@ -34,7 +34,7 @@ class Blockchain {
    */
   async initializeChain() {
     if (this.height === -1) {
-      let block = new BlockClass.Block({ data: "Genesis Block" });
+      const block = new BlockClass.Block({ data: "Genesis Block" });
       await this._addBlock(block);
     }
   }
@@ -61,8 +61,9 @@ class Blockchain {
    * that this method is a private method.
    */
   _addBlock(block) {
-    let self = this;
-    return new Promise(async (resolve, reject) => {});
+    const self = this;
+    return new Promise(async (resolve, reject) => {
+    });
   }
 
   /**
@@ -74,7 +75,8 @@ class Blockchain {
    * @param {*} address
    */
   requestMessageOwnershipVerification(address) {
-    return new Promise(resolve => {});
+    return new Promise(resolve => {
+    });
   }
 
   /**
@@ -95,8 +97,9 @@ class Blockchain {
    * @param {*} star
    */
   submitStar(address, message, signature, star) {
-    let self = this;
-    return new Promise(async (resolve, reject) => {});
+    const self = this;
+    return new Promise(async (resolve, reject) => {
+    });
   }
 
   /**
@@ -106,8 +109,9 @@ class Blockchain {
    * @param {*} hash
    */
   getBlockByHash(hash) {
-    let self = this;
-    return new Promise((resolve, reject) => {});
+    const self = this;
+    return new Promise((resolve, reject) => {
+    });
   }
 
   /**
@@ -116,9 +120,9 @@ class Blockchain {
    * @param {*} height
    */
   getBlockByHeight(height) {
-    let self = this;
+    const self = this;
     return new Promise((resolve, reject) => {
-      let block = self.chain.filter(p => p.height === height)[0];
+      const block = self.chain.filter(p => p.height === height)[0];
       if (block) {
         resolve(block);
       } else {
@@ -134,9 +138,10 @@ class Blockchain {
    * @param {*} address
    */
   getStarsByWalletAddress(address) {
-    let self = this;
-    let stars = [];
-    return new Promise((resolve, reject) => {});
+    const self = this;
+    const stars = [];
+    return new Promise((resolve, reject) => {
+    });
   }
 
   /**
@@ -146,9 +151,10 @@ class Blockchain {
    * 2. Each Block should check the with the previousBlockHash
    */
   validateChain() {
-    let self = this;
-    let errorLog = [];
-    return new Promise(async (resolve, reject) => {});
+    const self = this;
+    const errorLog = [];
+    return new Promise(async (resolve, reject) => {
+    });
   }
 }
 
