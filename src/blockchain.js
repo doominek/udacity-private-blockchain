@@ -23,7 +23,6 @@ class Blockchain {
    */
   constructor() {
     this.chain = [];
-    this.height = -1;
     this.initializeChain();
   }
 
@@ -33,8 +32,8 @@ class Blockchain {
    * Passing as a data `{data: 'Genesis Block'}`
    */
   async initializeChain() {
-    if (this.height === -1) {
-      const block = new Block({ data: "Genesis Block" });
+    if (this.chain.length === 0) {
+      const block = Block.createGenesisBlock();
       await this._addBlock(block);
     }
   }
@@ -42,10 +41,8 @@ class Blockchain {
   /**
    * Utility method that return a Promise that will resolve with the height of the chain
    */
-  getChainHeight() {
-    return new Promise((resolve, reject) => {
-      resolve(this.height);
-    });
+  async getChainHeight() {
+    return this.chain.length - 1;
   }
 
   /**
@@ -60,9 +57,8 @@ class Blockchain {
    * Note: the symbol `_` in the method name indicates in the javascript convention
    * that this method is a private method.
    */
-  _addBlock(block) {
-    const self = this;
-    return new Promise(async (resolve, reject) => {});
+  async _addBlock(block) {
+    this.chain.push(block);
   }
 
   /**
@@ -105,9 +101,8 @@ class Blockchain {
    * Search on the chain array for the block that has the hash.
    * @param {*} hash
    */
-  getBlockByHash(hash) {
-    const self = this;
-    return new Promise((resolve, reject) => {});
+  async getBlockByHash(hash) {
+    return this.chain.find(block => block.hash === hash);
   }
 
   /**
@@ -115,16 +110,8 @@ class Blockchain {
    * with the height equal to the parameter `height`
    * @param {*} height
    */
-  getBlockByHeight(height) {
-    const self = this;
-    return new Promise((resolve, reject) => {
-      const block = self.chain.filter(p => p.height === height)[0];
-      if (block) {
-        resolve(block);
-      } else {
-        resolve(null);
-      }
-    });
+  async getBlockByHeight(height) {
+    return this.chain.find(block => block.height === height);
   }
 
   /**
