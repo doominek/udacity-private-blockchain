@@ -8,9 +8,15 @@
  *
  */
 
-const SHA256 = require("crypto-js/sha256");
 const bitcoinMessage = require("bitcoinjs-message");
+
 const { Block } = require("./block.js");
+const {
+  StartOwnershipVerificationMessage
+} = require("./star-ownership-verification-message");
+
+const moment = require("moment");
+const _ = require("lodash");
 
 class Blockchain {
   /**
@@ -69,8 +75,9 @@ class Blockchain {
    * The method return a Promise that will resolve with the message to be signed
    * @param {*} address
    */
-  requestMessageOwnershipVerification(address) {
-    return new Promise(resolve => {});
+  async requestMessageOwnershipVerification(address) {
+    const message = new StartOwnershipVerificationMessage(address);
+    return message.toString();
   }
 
   /**
@@ -82,7 +89,7 @@ class Blockchain {
    * 1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
    * 2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
    * 3. Check if the time elapsed is less than 5 minutes
-   * 4. Veify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
+   * 4. Verify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
    * 5. Create the block and add it to the chain
    * 6. Resolve with the block added.
    * @param {*} address
@@ -90,9 +97,29 @@ class Blockchain {
    * @param {*} signature
    * @param {*} star
    */
-  submitStar(address, message, signature, star) {
-    const self = this;
-    return new Promise(async (resolve, reject) => {});
+  async submitStar(address, message, signature, star) {
+    const msg = StartOwnershipVerificationMessage.parse(message);
+    const elapsedTime = moment.duration(moment().diff(msg.timestamp));
+    const maxDuration = moment.duration(5, "minutes");
+
+    if (elapsedTime.asSeconds() < maxDuration.asSeconds()) {
+      const newBlock = this._createCandidateBlock(star);
+      this._addBlock(newBlock);
+
+      return newBlock;
+    }
+
+    return null;
+  }
+
+  _createCandidateBlock(data) {
+    const newBlock = new Block(
+      data,
+      this.chain.length,
+      _.last(this.chain).hash
+    );
+    newBlock.recalculateHash();
+    return newBlock;
   }
 
   /**
