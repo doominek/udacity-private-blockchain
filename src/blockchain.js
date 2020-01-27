@@ -10,7 +10,7 @@
 
 const SHA256 = require("crypto-js/sha256");
 const bitcoinMessage = require("bitcoinjs-message");
-const BlockClass = require("./block.js");
+const { Block } = require("./block.js");
 
 class Blockchain {
   /**
@@ -34,7 +34,7 @@ class Blockchain {
    */
   async initializeChain() {
     if (this.height === -1) {
-      const block = new BlockClass.Block({ data: "Genesis Block" });
+      const block = new Block({ data: "Genesis Block" });
       await this._addBlock(block);
     }
   }
@@ -62,8 +62,7 @@ class Blockchain {
    */
   _addBlock(block) {
     const self = this;
-    return new Promise(async (resolve, reject) => {
-    });
+    return new Promise(async (resolve, reject) => {});
   }
 
   /**
@@ -75,8 +74,7 @@ class Blockchain {
    * @param {*} address
    */
   requestMessageOwnershipVerification(address) {
-    return new Promise(resolve => {
-    });
+    return new Promise(resolve => {});
   }
 
   /**
@@ -98,8 +96,7 @@ class Blockchain {
    */
   submitStar(address, message, signature, star) {
     const self = this;
-    return new Promise(async (resolve, reject) => {
-    });
+    return new Promise(async (resolve, reject) => {});
   }
 
   /**
@@ -110,8 +107,7 @@ class Blockchain {
    */
   getBlockByHash(hash) {
     const self = this;
-    return new Promise((resolve, reject) => {
-    });
+    return new Promise((resolve, reject) => {});
   }
 
   /**
@@ -140,8 +136,7 @@ class Blockchain {
   getStarsByWalletAddress(address) {
     const self = this;
     const stars = [];
-    return new Promise((resolve, reject) => {
-    });
+    return new Promise((resolve, reject) => {});
   }
 
   /**
@@ -153,8 +148,7 @@ class Blockchain {
   validateChain() {
     const self = this;
     const errorLog = [];
-    return new Promise(async (resolve, reject) => {
-    });
+    return new Promise(async (resolve, reject) => {});
   }
 }
 
