@@ -10,13 +10,15 @@
 
 const bitcoinMessage = require("bitcoinjs-message");
 
+const moment = require("moment");
+const _ = require("lodash");
+
 const { Block } = require("./block.js");
 const {
   StartOwnershipVerificationMessage
 } = require("./star-ownership-verification-message");
 
-const moment = require("moment");
-const _ = require("lodash");
+const MAX_OWNERSHIP_VERIFICATION_DURATION = moment.duration(5, "minutes");
 
 class Blockchain {
   /**
@@ -99,10 +101,8 @@ class Blockchain {
    */
   async submitStar(address, message, signature, star) {
     const msg = StartOwnershipVerificationMessage.parse(message);
-    const elapsedTime = moment.duration(moment().diff(msg.timestamp));
-    const maxDuration = moment.duration(5, "minutes");
 
-    if (elapsedTime.asSeconds() < maxDuration.asSeconds()) {
+    if (!msg.isOlderThan(MAX_OWNERSHIP_VERIFICATION_DURATION)) {
       const newBlock = this._createCandidateBlock(star);
       this._addBlock(newBlock);
 
@@ -119,6 +119,7 @@ class Blockchain {
       _.last(this.chain).hash
     );
     newBlock.recalculateHash();
+
     return newBlock;
   }
 
