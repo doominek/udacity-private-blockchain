@@ -16,17 +16,17 @@ const BlockChain = require("./src/blockchain.js");
 
 class ApplicationServer {
   constructor() {
-    //Express application object
+    // Express application object
     this.app = express();
-    //Blockchain class object
+    // Blockchain class object
     this.blockchain = new BlockChain.Blockchain();
-    //Method that initialized the express framework.
+    // Method that initialized the express framework.
     this.initExpress();
-    //Method that initialized middleware modules
+    // Method that initialized middleware modules
     this.initExpressMiddleWare();
-    //Method that initialized the controllers where you defined the endpoints
+    // Method that initialized the controllers where you defined the endpoints
     this.initControllers();
-    //Method that run the express application.
+    // Method that run the express application.
     this.start();
   }
 
@@ -45,7 +45,7 @@ class ApplicationServer {
   }
 
   start() {
-    let self = this;
+    const self = this;
     this.app.listen(this.app.get("port"), () => {
       console.log(`Server Listening for port: ${self.app.get("port")}`);
     });
