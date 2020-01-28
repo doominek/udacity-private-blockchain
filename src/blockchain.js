@@ -103,7 +103,7 @@ class Blockchain {
     const msg = StartOwnershipVerificationMessage.parse(message);
 
     if (!msg.isOlderThan(MAX_OWNERSHIP_VERIFICATION_DURATION)) {
-      const newBlock = this._createCandidateBlock(star);
+      const newBlock = this._createCandidateBlock({ star, address });
       this._addBlock(newBlock);
 
       return newBlock;
@@ -148,10 +148,14 @@ class Blockchain {
    * Remember the star should be returned decoded.
    * @param {*} address
    */
-  getStarsByWalletAddress(address) {
-    const self = this;
-    const stars = [];
-    return new Promise((resolve, reject) => {});
+  async getStarsByWalletAddress(address) {
+    const blockData = await Promise.all(
+      this.chain.map(block => block.getBData())
+    );
+
+    return blockData
+      .filter(data => data && data.address === address)
+      .map(data => ({ star: data.star, owner: data.address }));
   }
 
   /**
