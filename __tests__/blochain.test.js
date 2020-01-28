@@ -30,7 +30,7 @@ describe("Blockchain", () => {
     });
   });
 
-  describe("- when searched through", () => {
+  describe("- when searching through", () => {
     let firstBlock, secondBlock, thirdBlock;
 
     beforeEach(() => {
@@ -52,11 +52,11 @@ describe("Blockchain", () => {
 
     test("it should return block by hash", async () => {
       const found = await blockchain.getBlockByHash(
-        "654afcb60c72412516358455e9c31b26c31550fc9edfcab3e6dc44e658a55384"
+        "c601c16b5edae21ba13c6e8074bde18e8a475d12cef8434650bbcff3c32941a8"
       );
       expect(found).toBeDefined();
       expect(found.hash).toBe(
-        "654afcb60c72412516358455e9c31b26c31550fc9edfcab3e6dc44e658a55384"
+        "c601c16b5edae21ba13c6e8074bde18e8a475d12cef8434650bbcff3c32941a8"
       );
       expect(found).toStrictEqual(firstBlock);
     });
@@ -105,7 +105,7 @@ describe("Blockchain", () => {
       }
     });
 
-    test("it should find block by wallet address", async () => {
+    test("it should find star data by wallet address", async () => {
       const secondStar = { ...starData, dec: "Beta", story: "Second star!" };
       const thirdStar = { ...starData, dec: "Gamma", story: "Third star!" };
 
@@ -136,6 +136,56 @@ describe("Blockchain", () => {
       expect(stars).toContainEqual(starData);
       expect(stars).toContainEqual(thirdStar);
       expect(data.every(e => e.owner === "WALLET_1")).toBeTruthy();
+    });
+  });
+
+  describe("- when validating", () => {
+    beforeEach(async () => {
+      await blockchain.submitStar(
+        "WALLET_1",
+        "WALLET_1:1577836740:starRegistry",
+        "W1_SIGNATURE",
+        { dec: "Alfa" }
+      );
+
+      await blockchain.submitStar(
+        "WALLET_2",
+        "WALLET_2:1577836720:starRegistry",
+        "W1_SIGNATURE",
+        { dec: "Beta" }
+      );
+
+      await blockchain.submitStar(
+        "WALLET_1",
+        "WALLET_1:1577836640:starRegistry",
+        "W1_SIGNATURE",
+        { dec: "Gamma" }
+      );
+    });
+
+    test("should succeed if everything's valid", async () => {
+      const errors = await blockchain.validateChain();
+
+      expect(errors.length).toBe(0);
+    });
+
+    test("should fail if contains block with invalid previous hash", async () => {
+      blockchain.chain[2].previousBlockHash = "INVALID1";
+
+      const errors = await blockchain.validateChain();
+
+      expect(errors.length).toBe(2);
+      expect(errors).toContainEqual("Invalid hash for block #2");
+      expect(errors).toContainEqual("Invalid previous block hash for block #2");
+    });
+
+    test("should fail if block hash invalid", async () => {
+      blockchain.chain[1].body = "CHANGED";
+
+      const errors = await blockchain.validateChain();
+
+      expect(errors.length).toBe(1);
+      expect(errors).toContainEqual("Invalid hash for block #1");
     });
   });
 });

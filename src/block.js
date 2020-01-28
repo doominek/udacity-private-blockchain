@@ -69,10 +69,10 @@ class Block {
   }
 
   calculateHash() {
-    const { height, body, time, previousHashBlock } = this;
+    const { height, body, time, previousBlockHash } = this;
 
     return SHA256(
-      JSON.stringify({ height, body, time, previousHashBlock })
+      JSON.stringify({ height, body, time, previousBlockHash })
     ).toString();
   }
 }

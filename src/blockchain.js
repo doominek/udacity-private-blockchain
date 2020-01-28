@@ -166,10 +166,27 @@ class Blockchain {
    * 1. You should validate each block using `validateBlock`
    * 2. Each Block should check the with the previousBlockHash
    */
-  validateChain() {
-    const self = this;
+  async validateChain() {
     const errorLog = [];
-    return new Promise(async (resolve, reject) => {});
+
+    const validatedHashes = await Promise.all(
+      this.chain.map(block => block.validate())
+    );
+    let previousBlockHash;
+
+    this.chain.forEach((block, idx) => {
+      if (!validatedHashes[idx]) {
+        errorLog.push(`Invalid hash for block #${block.height}`);
+      }
+
+      if (!block.isGenesis && block.previousBlockHash !== previousBlockHash) {
+        errorLog.push(`Invalid previous block hash for block #${block.height}`);
+      }
+
+      previousBlockHash = block.hash;
+    });
+
+    return errorLog;
   }
 }
 
