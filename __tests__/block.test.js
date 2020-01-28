@@ -1,9 +1,12 @@
+const MockDate = require("mockdate");
+
 const { Block } = require("../src/block");
 
-const JAN_1ST_2020_UNIX_MILIS = 1577836800000;
-Date.now = jest.fn(() => JAN_1ST_2020_UNIX_MILIS);
-
 describe("Block", () => {
+  beforeAll(() => {
+    MockDate.set("2020-01-01");
+  });
+
   describe("- when creating genesis block", () => {
     let block;
 
@@ -55,5 +58,9 @@ describe("Block", () => {
       const data = await block.getBData();
       expect(data).toBeNull();
     });
+  });
+
+  afterAll(() => {
+    MockDate.reset();
   });
 });
