@@ -108,6 +108,10 @@ class Blockchain {
       );
     }
 
+    if (!bitcoinMessage.verify(message, address, signature)) {
+      throw new Error("Failed to verify message with wallet.");
+    }
+
     const newBlock = this._createCandidateBlock({ star, address });
     this._addBlock(newBlock);
 

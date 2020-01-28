@@ -1,6 +1,9 @@
 const MockDate = require("mockdate");
+const bitcoinMessage = require("bitcoinjs-message");
 
 const { Blockchain } = require("../src/blockchain");
+
+jest.mock("bitcoinjs-message");
 
 /*
  eslint-disable no-underscore-dangle
@@ -76,6 +79,10 @@ describe("Blockchain", () => {
       story: "My First Star!"
     };
 
+    beforeEach(() => {
+      bitcoinMessage.verify.mockReturnValue(true);
+    });
+
     test("it should add new block with wallet and star data", async () => {
       const block = await blockchain.submitStar(
         "WALLET_1",
@@ -102,6 +109,21 @@ describe("Blockchain", () => {
         expect(e.message).toBe(
           "Ownership verification message should not be older than 5 minutes."
         );
+      }
+    });
+
+    test("it should throw error if message cannot be verified with wallet", async () => {
+      bitcoinMessage.verify.mockReturnValue(false);
+
+      try {
+        await blockchain.submitStar(
+          "WALLET_1",
+          "WALLET_1:1577836750:starRegistry",
+          "W1_SIGNATURE",
+          starData
+        );
+      } catch (e) {
+        expect(e.message).toBe("Failed to verify message with wallet.");
       }
     });
 
