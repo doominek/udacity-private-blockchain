@@ -6,6 +6,9 @@
   "scripts": {
     "test": "jest"
   },
+  "engines": {
+    "node": ">=10.6.0"
+  },
   "author": "Udacity - jose.morales@udacity.com",
   "license": "ISC",
   "dependencies": {

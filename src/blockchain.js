@@ -15,7 +15,7 @@ const _ = require("lodash");
 
 const { Block } = require("./block.js");
 const {
-  StartOwnershipVerificationMessage
+  StarOwnershipVerificationMessage
 } = require("./star-ownership-verification-message");
 
 const MAX_OWNERSHIP_VERIFICATION_DURATION = moment.duration(5, "minutes");
@@ -78,7 +78,7 @@ class Blockchain {
    * @param {*} address
    */
   async requestMessageOwnershipVerification(address) {
-    const message = new StartOwnershipVerificationMessage(address);
+    const message = new StarOwnershipVerificationMessage(address);
     return message.toString();
   }
 
@@ -100,16 +100,18 @@ class Blockchain {
    * @param {*} star
    */
   async submitStar(address, message, signature, star) {
-    const msg = StartOwnershipVerificationMessage.parse(message);
+    const msg = StarOwnershipVerificationMessage.parse(message);
 
-    if (!msg.isOlderThan(MAX_OWNERSHIP_VERIFICATION_DURATION)) {
-      const newBlock = this._createCandidateBlock({ star, address });
-      this._addBlock(newBlock);
-
-      return newBlock;
+    if (msg.isOlderThan(MAX_OWNERSHIP_VERIFICATION_DURATION)) {
+      throw new Error(
+        "Ownership verification message should not be older than 5 minutes."
+      );
     }
 
-    return null;
+    const newBlock = this._createCandidateBlock({ star, address });
+    this._addBlock(newBlock);
+
+    return newBlock;
   }
 
   _createCandidateBlock(data) {

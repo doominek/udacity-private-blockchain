@@ -1,6 +1,6 @@
 const moment = require("moment");
 
-class StartOwnershipVerificationMessage {
+class StarOwnershipVerificationMessage {
   static parse(message) {
     const parts = message.split(":");
     if (parts.length !== 3) {
@@ -9,7 +9,7 @@ class StartOwnershipVerificationMessage {
       );
     }
 
-    return new StartOwnershipVerificationMessage(
+    return new StarOwnershipVerificationMessage(
       parts[0],
       moment.unix(parseInt(parts[1], 10))
     );
@@ -30,4 +30,4 @@ class StartOwnershipVerificationMessage {
   }
 }
 
-module.exports.StartOwnershipVerificationMessage = StartOwnershipVerificationMessage;
+module.exports.StarOwnershipVerificationMessage = StarOwnershipVerificationMessage;

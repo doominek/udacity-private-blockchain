@@ -68,4 +68,74 @@ describe("Blockchain", () => {
       expect(found).toStrictEqual(thirdBlock);
     });
   });
+
+  describe("- when submitting star", () => {
+    const starData = {
+      dec: "Alpha",
+      ra: "16h 29m 1s",
+      story: "My First Star!"
+    };
+
+    test("it should add new block with wallet and star data", async () => {
+      const block = await blockchain.submitStar(
+        "WALLET_1",
+        "WALLET_1:1577836740:starRegistry",
+        "W1_SIGNATURE",
+        starData
+      );
+
+      expect(block).not.toBeNull();
+      const data = await block.getBData();
+      expect(data.star).toStrictEqual(starData);
+      expect(data.address).toBe("WALLET_1");
+    });
+
+    test("it should throw error if ownership verification message timestamp is older than 5 minutes", async () => {
+      try {
+        await blockchain.submitStar(
+          "WALLET_1",
+          "WALLET_1:1577836440:starRegistry",
+          "W1_SIGNATURE",
+          starData
+        );
+      } catch (e) {
+        expect(e.message).toBe(
+          "Ownership verification message should not be older than 5 minutes."
+        );
+      }
+    });
+
+    test("it should find block by wallet address", async () => {
+      const secondStar = { ...starData, dec: "Beta", story: "Second star!" };
+      const thirdStar = { ...starData, dec: "Gamma", story: "Third star!" };
+
+      await blockchain.submitStar(
+        "WALLET_1",
+        "WALLET_1:1577836740:starRegistry",
+        "W1_SIGNATURE",
+        starData
+      );
+
+      await blockchain.submitStar(
+        "WALLET_2",
+        "WALLET_2:1577836720:starRegistry",
+        "W1_SIGNATURE",
+        secondStar
+      );
+
+      await blockchain.submitStar(
+        "WALLET_1",
+        "WALLET_1:1577836640:starRegistry",
+        "W1_SIGNATURE",
+        thirdStar
+      );
+
+      const data = await blockchain.getStarsByWalletAddress("WALLET_1");
+      expect(data.length).toBe(2);
+      const stars = data.map(e => e.star);
+      expect(stars).toContainEqual(starData);
+      expect(stars).toContainEqual(thirdStar);
+      expect(data.every(e => e.owner === "WALLET_1")).toBeTruthy();
+    });
+  });
 });
