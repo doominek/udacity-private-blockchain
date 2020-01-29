@@ -15,17 +15,22 @@ const moment = require("moment");
 
 class Block {
   static createGenesisBlock() {
-    const block = new Block({ type: "GENESIS" }, 0);
+    const block = new Block({ data: "'Genesis Block" }, 0);
     block.recalculateHash();
     return block;
   }
 
   // Constructor - argument data will be the object containing the transaction data
-  constructor(data, height = 0, previousBlockHash = null) {
+  constructor(
+    data,
+    height = 0,
+    previousBlockHash = null,
+    time = moment().unix()
+  ) {
     this.hash = null; // Hash of the block
     this.height = height; // Block Height (consecutive number of each block)
     this.body = Buffer.from(JSON.stringify(data)).toString("hex"); // Will contain the transactions stored in the block, by default it will encode the data
-    this.time = 0; // Timestamp for the Block creation
+    this.time = time; // Timestamp for the Block creation
     this.previousBlockHash = previousBlockHash; // Reference to the previous Block Hash
   }
 
@@ -41,9 +46,15 @@ class Block {
    *  5. Resolve true or false depending if it is valid or not.
    *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
    */
-  async validate() {
-    const validHash = this.calculateHash(this);
-    return this.hash === validHash;
+  validate() {
+    return new Promise((resolve, reject) => {
+      try {
+        const validHash = this.calculateHash(this);
+        resolve(this.hash === validHash);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   /**
@@ -55,8 +66,15 @@ class Block {
    *  3. Resolve with the data and make sure that you don't need to return the data for the `genesis block`
    *     or Reject with an error.
    */
-  async getBData() {
-    return !this.isGenesis ? JSON.parse(hex2ascii(this.body)) : null;
+  getBData() {
+    return new Promise((resolve, reject) => {
+      try {
+        const data = !this.isGenesis ? JSON.parse(hex2ascii(this.body)) : null;
+        resolve(data);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   get isGenesis() {
@@ -64,7 +82,6 @@ class Block {
   }
 
   recalculateHash() {
-    this.time = moment().unix();
     this.hash = this.calculateHash();
   }
 

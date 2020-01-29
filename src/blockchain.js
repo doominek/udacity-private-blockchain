@@ -4,7 +4,7 @@
  *  It uses libraries like `crypto-js` to create the hashes for each block and `bitcoinjs-message`
  *  to verify a message signature. The chain is stored in the array
  *  `this.chain = [];`. Of course each time you run the application the chain will be empty because and array
- *  isn't a persisten storage method.
+ *  isn't a persistent storage method.
  *
  */
 
@@ -24,7 +24,7 @@ class Blockchain {
   /**
    * Constructor of the class, you will need to setup your chain array and the height
    * of your chain (the length of your chain array).
-   * Also everytime you create a Blockchain class you will need to initialized the chain creating
+   * Also every time you create a Blockchain class you will need to initialized the chain creating
    * the Genesis Block.
    * The methods in this class will always return a Promise to allow client applications or
    * other backends to call asynchronous functions.
@@ -50,7 +50,9 @@ class Blockchain {
    * Utility method that return a Promise that will resolve with the height of the chain
    */
   async getChainHeight() {
-    return this.chain.length - 1;
+    return new Promise(resolve => {
+      resolve(this.chain.length - 1);
+    });
   }
 
   /**
@@ -66,7 +68,14 @@ class Blockchain {
    * that this method is a private method.
    */
   async _addBlock(block) {
-    this.chain.push(block);
+    return new Promise((resolve, reject) => {
+      try {
+        this.chain.push(block);
+        resolve(block);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   /**
@@ -78,8 +87,10 @@ class Blockchain {
    * @param {*} address
    */
   async requestMessageOwnershipVerification(address) {
-    const message = new StarOwnershipVerificationMessage(address);
-    return message.toString();
+    return new Promise(resolve => {
+      const message = new StarOwnershipVerificationMessage(address);
+      resolve(message.toString());
+    });
   }
 
   /**
@@ -99,23 +110,31 @@ class Blockchain {
    * @param {*} signature
    * @param {*} star
    */
-  async submitStar(address, message, signature, star) {
-    const msg = StarOwnershipVerificationMessage.parse(message);
+  submitStar(address, message, signature, star) {
+    return new Promise((resolve, reject) => {
+      try {
+        const msg = StarOwnershipVerificationMessage.parse(message);
 
-    if (msg.isOlderThan(MAX_OWNERSHIP_VERIFICATION_DURATION)) {
-      throw new Error(
-        "Ownership verification message should not be older than 5 minutes."
-      );
-    }
+        if (msg.isOlderThan(MAX_OWNERSHIP_VERIFICATION_DURATION)) {
+          reject(
+            new Error(
+              "Ownership verification message should not be older than 5 minutes."
+            )
+          );
+        }
 
-    if (!bitcoinMessage.verify(message, address, signature)) {
-      throw new Error("Failed to verify message with wallet.");
-    }
+        if (!bitcoinMessage.verify(message, address, signature)) {
+          reject(new Error("Failed to verify message with wallet."));
+        }
 
-    const newBlock = this._createCandidateBlock({ star, address });
-    this._addBlock(newBlock);
+        const newBlock = this._createCandidateBlock({ star, address });
+        this._addBlock(newBlock);
 
-    return newBlock;
+        resolve(newBlock);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   _createCandidateBlock(data) {
@@ -135,8 +154,14 @@ class Blockchain {
    * Search on the chain array for the block that has the hash.
    * @param {*} hash
    */
-  async getBlockByHash(hash) {
-    return this.chain.find(block => block.hash === hash);
+  getBlockByHash(hash) {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(this.chain.find(block => block.hash === hash));
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   /**
@@ -144,8 +169,15 @@ class Blockchain {
    * with the height equal to the parameter `height`
    * @param {*} height
    */
-  async getBlockByHeight(height) {
-    return this.chain.find(block => block.height === height);
+  getBlockByHeight(height) {
+    return new Promise((resolve, reject) => {
+      try {
+        const block = this.chain.find(block => block.height === height);
+        resolve(block ? block : null);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   /**
@@ -154,14 +186,14 @@ class Blockchain {
    * Remember the star should be returned decoded.
    * @param {*} address
    */
-  async getStarsByWalletAddress(address) {
-    const blockData = await Promise.all(
-      this.chain.map(block => block.getBData())
+  getStarsByWalletAddress(address) {
+    return Promise.all(this.chain.map(block => block.getBData())).then(
+      blockData => {
+        return blockData
+          .filter(data => data && data.address === address)
+          .map(data => ({ star: data.star, owner: data.address }));
+      }
     );
-
-    return blockData
-      .filter(data => data && data.address === address)
-      .map(data => ({ star: data.star, owner: data.address }));
   }
 
   /**
@@ -170,27 +202,33 @@ class Blockchain {
    * 1. You should validate each block using `validateBlock`
    * 2. Each Block should check the with the previousBlockHash
    */
-  async validateChain() {
-    const errorLog = [];
+  validateChain() {
+    return Promise.all(this.chain.map(block => block.validate())).then(
+      result => {
+        const errorLog = [];
 
-    const validatedHashes = await Promise.all(
-      this.chain.map(block => block.validate())
+        let previousBlockHash;
+
+        this.chain.forEach((block, idx) => {
+          if (!result[idx]) {
+            errorLog.push(`Invalid hash for block #${block.height}`);
+          }
+
+          if (
+            !block.isGenesis &&
+            block.previousBlockHash !== previousBlockHash
+          ) {
+            errorLog.push(
+              `Invalid previous block hash for block #${block.height}`
+            );
+          }
+
+          previousBlockHash = block.hash;
+        });
+
+        return errorLog;
+      }
     );
-    let previousBlockHash;
-
-    this.chain.forEach((block, idx) => {
-      if (!validatedHashes[idx]) {
-        errorLog.push(`Invalid hash for block #${block.height}`);
-      }
-
-      if (!block.isGenesis && block.previousBlockHash !== previousBlockHash) {
-        errorLog.push(`Invalid previous block hash for block #${block.height}`);
-      }
-
-      previousBlockHash = block.hash;
-    });
-
-    return errorLog;
   }
 }
 

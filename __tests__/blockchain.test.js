@@ -55,12 +55,9 @@ describe("Blockchain", () => {
 
     test("it should return block by hash", async () => {
       const found = await blockchain.getBlockByHash(
-        "c601c16b5edae21ba13c6e8074bde18e8a475d12cef8434650bbcff3c32941a8"
+        "8992c4dcb10eb08c683c9f6232be2ddecb1e070b288088a260a467a768595a53"
       );
       expect(found).toBeDefined();
-      expect(found.hash).toBe(
-        "c601c16b5edae21ba13c6e8074bde18e8a475d12cef8434650bbcff3c32941a8"
-      );
       expect(found).toStrictEqual(firstBlock);
     });
 
