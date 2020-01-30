@@ -31,6 +31,7 @@ class Blockchain {
    */
   constructor() {
     this.chain = [];
+    this.height = -1;
     this.initializeChain();
   }
 
@@ -40,8 +41,8 @@ class Blockchain {
    * Passing as a data `{data: 'Genesis Block'}`
    */
   async initializeChain() {
-    if (this.chain.length === 0) {
-      const block = Block.createGenesisBlock();
+    if (this.height === -1) {
+      const block = new Block({ data: "Genesis Block" });
       await this._addBlock(block);
     }
   }
@@ -49,9 +50,9 @@ class Blockchain {
   /**
    * Utility method that return a Promise that will resolve with the height of the chain
    */
-  async getChainHeight() {
+  getChainHeight() {
     return new Promise(resolve => {
-      resolve(this.chain.length - 1);
+      resolve(this.height);
     });
   }
 
@@ -70,7 +71,15 @@ class Blockchain {
   async _addBlock(block) {
     return new Promise((resolve, reject) => {
       try {
+        block.time = moment().unix();
+        block.height = this.height === -1 ? 0 : this.height + 1;
+        block.previousBlockHash =
+          this.height !== -1 ? _.last(this.chain).hash : null;
+        block.recalculateHash();
+
         this.chain.push(block);
+        this.height += 1;
+
         resolve(block);
       } catch (e) {
         reject(e);
@@ -86,7 +95,7 @@ class Blockchain {
    * The method return a Promise that will resolve with the message to be signed
    * @param {*} address
    */
-  async requestMessageOwnershipVerification(address) {
+  requestMessageOwnershipVerification(address) {
     return new Promise(resolve => {
       const message = new StarOwnershipVerificationMessage(address);
       resolve(message.toString());
@@ -127,25 +136,13 @@ class Blockchain {
           reject(new Error("Failed to verify message with wallet."));
         }
 
-        const newBlock = this._createCandidateBlock({ star, address });
-        this._addBlock(newBlock);
+        const block = this._addBlock(new Block({ star, address }));
 
-        resolve(newBlock);
+        resolve(block);
       } catch (e) {
         reject(e);
       }
     });
-  }
-
-  _createCandidateBlock(data) {
-    const newBlock = new Block(
-      data,
-      this.chain.length,
-      _.last(this.chain).hash
-    );
-    newBlock.recalculateHash();
-
-    return newBlock;
   }
 
   /**
@@ -172,8 +169,12 @@ class Blockchain {
   getBlockByHeight(height) {
     return new Promise((resolve, reject) => {
       try {
-        const block = this.chain.find(block => block.height === height);
-        resolve(block ? block : null);
+        const block = this.chain.find(item => item.height === height);
+        if (block) {
+          resolve(block);
+        } else {
+          resolve(null);
+        }
       } catch (e) {
         reject(e);
       }

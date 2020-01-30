@@ -16,7 +16,7 @@ describe("Block", () => {
 
     test("it should have hash calculated", () => {
       expect(block.hash).toBe(
-        "8d5019579e4ab02da5665eb3235b73ea33ef880071e5ff289238f2cc8dd15a11"
+        "0b3ced3dae46d3313b5a9b112b7e3f33eb1717255b2719f7c5c1563774ad5ffd"
       );
     });
 

@@ -15,7 +15,7 @@ const moment = require("moment");
 
 class Block {
   static createGenesisBlock() {
-    const block = new Block({ data: "'Genesis Block" }, 0);
+    const block = new Block({ data: "Genesis Block" }, 0);
     block.recalculateHash();
     return block;
   }
@@ -49,7 +49,7 @@ class Block {
   validate() {
     return new Promise((resolve, reject) => {
       try {
-        const validHash = this.calculateHash(this);
+        const validHash = this._calculateHash(this);
         resolve(this.hash === validHash);
       } catch (e) {
         reject(e);
@@ -82,10 +82,10 @@ class Block {
   }
 
   recalculateHash() {
-    this.hash = this.calculateHash();
+    this.hash = this._calculateHash();
   }
 
-  calculateHash() {
+  _calculateHash() {
     const { height, body, time, previousBlockHash } = this;
 
     return SHA256(
